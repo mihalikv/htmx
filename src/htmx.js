@@ -78,6 +78,7 @@ return (function () {
                 ignoreTitle: false,
                 scrollIntoViewOnBoost: true,
                 triggerSpecsCache: null,
+                cleanupElementsBeforeRemoval: true,
             },
             parseInterval:parseInterval,
             _:internalEval,
@@ -1000,6 +1001,13 @@ return (function () {
             forEach(Object.keys(internalData), function(key) { delete internalData[key] });
         }
 
+
+        function cleanUpElementIfNotGC(element) {
+            if(htmx.config.cleanupElementsBeforeRemoval) {
+                cleanUpElement(element);
+            }            
+        }
+
         function cleanUpElement(element) {
             triggerEvent(element, "htmx:beforeCleanupElement")
             deInitNode(element);
@@ -1028,7 +1036,7 @@ return (function () {
                     }
                     newElt = newElt.nextElementSibling;
                 }
-                cleanUpElement(target);
+                cleanUpElementIfNotGC(target);
                 parentElt(target).removeChild(target);
             }
         }
@@ -1049,7 +1057,7 @@ return (function () {
             return insertNodesBefore(parentElt(target), target.nextSibling, fragment, settleInfo);
         }
         function swapDelete(target, fragment, settleInfo) {
-            cleanUpElement(target);
+            cleanUpElementIfNotGC(target);
             return parentElt(target).removeChild(target);
         }
 
@@ -1058,10 +1066,10 @@ return (function () {
             insertNodesBefore(target, firstChild, fragment, settleInfo);
             if (firstChild) {
                 while (firstChild.nextSibling) {
-                    cleanUpElement(firstChild.nextSibling)
+                    cleanUpElementIfNotGC(firstChild.nextSibling)
                     target.removeChild(firstChild.nextSibling);
                 }
-                cleanUpElement(firstChild)
+                cleanUpElementIfNotGC(firstChild)
                 target.removeChild(firstChild);
             }
         }
